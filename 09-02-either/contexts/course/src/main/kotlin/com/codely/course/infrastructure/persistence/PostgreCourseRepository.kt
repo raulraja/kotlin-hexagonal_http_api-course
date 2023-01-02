@@ -1,19 +1,13 @@
 package com.codely.course.infrastructure.persistence
 
-import com.codely.common.Either
-import com.codely.common.Left
-import com.codely.common.Right
-import com.codely.course.domain.Course
-import com.codely.course.domain.CourseError
-import com.codely.course.domain.CourseId
-import com.codely.course.domain.CourseName
-import com.codely.course.domain.CourseNotFoundError
-import com.codely.course.domain.CourseRepository
-import java.sql.ResultSet
-import java.util.UUID
+import arrow.core.continuations.Raise
+import arrow.core.continuations.catch
+import com.codely.course.domain.*
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import java.sql.ResultSet
+import java.util.*
 
 class PostgreCourseRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) : CourseRepository {
 
@@ -30,16 +24,15 @@ class PostgreCourseRepository(private val jdbcTemplate: NamedParameterJdbcTempla
             }
     }
 
-    override fun find(id: CourseId): Either<CourseError, Course> = try {
+    context(Raise<CourseApplicationError>)
+    override fun find(id: CourseId): Course = catch({
         val query = "SELECT * FROM course where id=:id"
         val params = MapSqlParameterSource().addValue("id", id.value.toString())
         jdbcTemplate.queryForObject(query, params, mapRow())
-            ?.let { Right(it) }
-            ?: Left(CourseNotFoundError(id))
-    } catch (exception: Throwable) {
-        Left(CourseNotFoundError(id))
-    }
+            ?: raise(CourseNotFoundError(id))
+    }) { raise(CourseNotFoundError(id)) }
 
+    context(Raise<InvalidCourseName>)
     private fun mapRow(): RowMapper<Course> {
         return RowMapper { rs: ResultSet, _: Int ->
             val id = CourseId(UUID.fromString(rs.getString("id")))

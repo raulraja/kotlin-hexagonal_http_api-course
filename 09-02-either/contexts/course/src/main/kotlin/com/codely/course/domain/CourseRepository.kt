@@ -1,8 +1,10 @@
 package com.codely.course.domain
 
-import com.codely.common.Either
+import arrow.core.continuations.Raise
 
 interface CourseRepository {
     fun save(course: Course)
-    fun find(id: CourseId): Either<CourseError, Course>
+
+    context(Raise<CourseError>)
+    fun find(id: CourseId): Course
 }

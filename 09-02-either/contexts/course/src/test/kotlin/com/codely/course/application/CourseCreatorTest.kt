@@ -1,19 +1,17 @@
 package com.codely.course.application
 
+import arrow.core.Either
+import arrow.core.continuations.either
+import arrow.core.identity
 import com.codely.course.BaseTest
-import com.codely.course.domain.Course
-import com.codely.course.domain.CourseId
-import com.codely.course.domain.CourseName
-import com.codely.course.domain.CourseRepository
-import com.codely.course.domain.InvalidCourseIdException
-import com.codely.course.domain.InvalidCourseNameException
+import com.codely.course.domain.*
 import io.mockk.mockk
 import io.mockk.verify
-import java.time.LocalDateTime
-import java.util.UUID
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
+import java.time.LocalDateTime
+import java.util.*
+import kotlin.test.assertEquals
 
 class CourseCreatorTest : BaseTest() {
     private lateinit var courseRepository: CourseRepository
@@ -29,7 +27,7 @@ class CourseCreatorTest : BaseTest() {
     fun `should create a course successfully`() {
         givenFixedDate(fixedDate)
 
-        courseCreator.create(id, name)
+        either { courseCreator.create(id, name) }
 
         thenTheCourseShouldBeSaved()
     }
@@ -38,14 +36,19 @@ class CourseCreatorTest : BaseTest() {
     fun `should fail with invalid id`() {
         givenFixedDate(fixedDate)
 
-        assertThrows<InvalidCourseIdException> { courseCreator.create("Invalid", name) }
+        assertEquals(
+            either<InvalidCourse, Unit> { courseCreator.create("Invalid", name) },
+            Either.Left(InvalidCourseId("Invalid", null))
+        )
     }
 
     @Test
     fun `should fail with invalid name`() {
         givenFixedDate(fixedDate)
-
-        assertThrows<InvalidCourseNameException> { courseCreator.create(id, "    ") }
+        assertEquals(
+            either<InvalidCourse, Unit> { courseCreator.create(id, "    ") },
+            Either.Left(InvalidCourseName("    ", null))
+        )
     }
 
     private fun thenTheCourseShouldBeSaved() {
@@ -53,7 +56,7 @@ class CourseCreatorTest : BaseTest() {
             courseRepository.save(
                 Course(
                     id = CourseId(UUID.fromString(id)),
-                    name = CourseName(name),
+                    name = either { CourseName(name) }.fold({ throw RuntimeException("unexpected error on test name") }, ::identity),
                     createdAt = fixedDate
                 )
             )

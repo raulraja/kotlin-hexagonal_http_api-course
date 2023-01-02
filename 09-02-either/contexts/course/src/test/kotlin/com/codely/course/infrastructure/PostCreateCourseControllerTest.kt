@@ -1,8 +1,10 @@
 package com.codely.course.infrastructure
 
+import arrow.core.Either
+import arrow.core.continuations.either
 import com.codely.course.application.CourseCreator
-import com.codely.course.domain.InvalidCourseIdException
-import com.codely.course.domain.InvalidCourseNameException
+import com.codely.course.domain.InvalidCourseId
+import com.codely.course.domain.InvalidCourseName
 import com.codely.course.infrastructure.rest.create.CreateCourseRequest
 import com.codely.course.infrastructure.rest.create.PostCreateCourseController
 import io.mockk.every
@@ -27,7 +29,7 @@ class PostCreateCourseControllerTest {
 
     @Test
     fun `should return a successfull response`() {
-        every { courseCreator.create(any(), any()) } returns Unit
+        every { either { courseCreator.create(any(), any()) } } returns either { }
 
         val courseId = "03ef970b-719d-49c5-8d80-7dc762fe4be6"
         val response = controller.execute(CreateCourseRequest(courseId, "Test"))
@@ -37,7 +39,7 @@ class PostCreateCourseControllerTest {
 
     @Test
     fun `should fail when id is not valid`() {
-        every { courseCreator.create(any(), any()) } throws InvalidCourseIdException("1", null)
+        every { either { courseCreator.create(any(), any()) } } returns Either.Left(InvalidCourseId("1", null))
 
         val response = controller.execute(CreateCourseRequest("1", "Test"))
 
@@ -48,7 +50,7 @@ class PostCreateCourseControllerTest {
 
     @Test
     fun `should fail when name is not valid`() {
-        every { courseCreator.create(any(), any()) } throws InvalidCourseNameException("Invalid")
+        every { either { courseCreator.create(any(), any()) } } returns Either.Left(InvalidCourseName("Invalid", null))
 
         val response = controller.execute(CreateCourseRequest("03ef970b-719d-49c5-8d80-7dc762fe4be6", "Invalid"))
 
@@ -59,7 +61,7 @@ class PostCreateCourseControllerTest {
 
     @Test
     fun `should fail when there is an uncontrolled exception`() {
-        every { courseCreator.create(any(), any()) } throws Throwable()
+        every { either { courseCreator.create(any(), any()) } } throws Throwable()
 
         val response = controller.execute(CreateCourseRequest("03ef970b-719d-49c5-8d80-7dc762fe4be6", "Test"))
 

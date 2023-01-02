@@ -1,7 +1,8 @@
 package com.codely.course.infrastructure
 
-import com.codely.common.Left
-import com.codely.common.Right
+import arrow.core.Either
+import arrow.core.continuations.either
+import arrow.core.identity
 import com.codely.course.application.find.CourseFinder
 import com.codely.course.application.find.CourseResponse
 import com.codely.course.domain.CourseId
@@ -43,7 +44,7 @@ class GetFindCourseByIdControllerTest {
     private fun `when a course is requested by id`() = controller.execute(courseId)
 
     private fun `given a course response`() {
-        every { courseFinder.execute(any()) } returns Right(course)
+        every { either { courseFinder.execute(any()) } } returns Either.Right(course)
     }
 
     @Test
@@ -63,9 +64,9 @@ class GetFindCourseByIdControllerTest {
     }
 
     private fun `given there is no course found`() {
-        every { courseFinder.execute(any()) } returns Left(
+        every { either { courseFinder.execute(any()) } } returns Either.Left(
             CourseNotFoundError(
-                CourseId.fromString(courseId)
+                either { CourseId.fromString(courseId) }.fold({ throw RuntimeException("unexpected") }, ::identity)
             )
         )
     }

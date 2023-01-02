@@ -1,16 +1,14 @@
 package com.codely.course.application
 
-import com.codely.course.domain.Course
-import com.codely.course.domain.CourseId
-import com.codely.course.domain.CourseName
-import com.codely.course.domain.CourseRepository
+import arrow.core.continuations.Raise
+import com.codely.course.domain.*
 import java.time.LocalDateTime
 
 class CourseCreator(private val repository: CourseRepository) {
 
+    context(Raise<InvalidCourse>)
     fun create(id: String, name: String) {
-        Course(CourseId.fromString(id), CourseName(name), LocalDateTime.now()).let {
-            repository.save(it)
-        }
+        val course = Course(CourseId.fromString(id), CourseName(name), LocalDateTime.now())
+        repository.save(course)
     }
 }

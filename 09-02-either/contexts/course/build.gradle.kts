@@ -10,6 +10,7 @@ group = "com.codely.course"
 
 repositories {
     mavenCentral()
+    maven(url = "https://oss.sonatype.org/content/repositories/snapshots")
 }
 
 dependencies {
@@ -23,6 +24,7 @@ dependencies {
     implementation("org.springframework:spring-jdbc:5.3.22")
     implementation("org.springframework:spring-web:5.3.22")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.4")
+    implementation("io.arrow-kt:arrow-core:2.0.0-SNAPSHOT")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("io.mockk:mockk:1.12.5")
@@ -37,6 +39,7 @@ tasks.withType<Test> {
 
 tasks.withType<KotlinCompile>() {
     kotlinOptions.jvmTarget = "11"
+    kotlinOptions.freeCompilerArgs += "-Xcontext-receivers"
 }
 spotless {
     kotlin {

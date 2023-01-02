@@ -1,5 +1,7 @@
 package com.codely.course.acceptance
 
+import arrow.core.continuations.either
+import arrow.core.identity
 import com.codely.common.course.CourseMother
 import com.codely.course.infrastructure.persistence.PostgreCourseRepository
 import com.codely.shared.acceptance.BaseAcceptanceTest
@@ -35,7 +37,7 @@ class GetFindCourseAcceptanceTestRestAssure : BaseAcceptanceTest() {
     @Test
     fun `should find course successfully with course creation`() {
         Given {
-            `an existin course`()
+            `an existing course`()
             contentType(ContentType.JSON)
             body("")
         } When {
@@ -47,17 +49,17 @@ class GetFindCourseAcceptanceTestRestAssure : BaseAcceptanceTest() {
         }
     }
 
-    private fun `an existin course`() {
+    private fun `an existing course`() {
         courseRepository.save(course)
     }
 
     companion object {
         private val now = LocalDateTime.parse("2022-08-31T09:07:36")
-        private val course = CourseMother.sample(
+        private val course = either { CourseMother.sample(
             id = "f2fe1e4e-1e8f-493b-ac67-2c88090cae0a",
             name = "Saved course",
             createdAt = now
-        )
+        ) }.fold({throw RuntimeException("unexpected")}, ::identity)
         private val expectedCourseResponse = """
                 {
                     "id": "${course.id.value}",

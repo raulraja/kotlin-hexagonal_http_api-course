@@ -16,6 +16,7 @@ java.sourceCompatibility = JavaVersion.VERSION_11
 
 repositories {
     mavenCentral()
+    maven(url = "https://oss.sonatype.org/content/repositories/snapshots")
 }
 
 sourceSets {
@@ -44,6 +45,7 @@ dependencies {
     implementation(project(":common"))
 
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
+    implementation("io.arrow-kt:arrow-core:2.0.0-SNAPSHOT")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("com.diffplug.spotless:spotless-plugin-gradle:6.9.0")
@@ -55,6 +57,7 @@ dependencies {
     implementation("org.postgresql:postgresql:42.4.2")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.3")
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.21")
+    implementation("io.arrow-kt:arrow-core:2.0.0-SNAPSHOT")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -71,7 +74,7 @@ dependencies {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
-        freeCompilerArgs = listOf("-Xjsr305=strict")
+        freeCompilerArgs += listOf("-Xjsr305=strict", "-Xcontext-receivers")
         jvmTarget = "11"
     }
 }

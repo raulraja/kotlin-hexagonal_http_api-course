@@ -1,11 +1,9 @@
 package com.codely.course.infrastructure.rest.create
 
 import com.codely.course.application.CourseCreator
-import com.codely.course.domain.InvalidArgumentCourseException
-import com.codely.course.domain.InvalidCourseIdException
-import com.codely.course.domain.InvalidCourseNameException
+import com.codely.course.domain.*
+import com.codely.course.infrastructure.rest.response.respond
 import java.net.URI
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -17,26 +15,12 @@ class PostCreateCourseController(private val courseCreator: CourseCreator) {
     @PostMapping("/course")
     fun execute(
         @RequestBody request: CreateCourseRequest
-    ): ResponseEntity<String> {
-        return try {
+    ): ResponseEntity<String> =
+        respond {
             courseCreator.create(request.id, request.name)
-            ResponseEntity.created(URI.create("/course/${request.id}")).build()
-        } catch (exception: InvalidArgumentCourseException) {
-            when (exception) {
-                is InvalidCourseIdException -> ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body("The course id is not valid")
-
-                is InvalidCourseNameException -> ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body("The course name is not valid")
-            }
-        } catch (exception: Throwable) {
-            ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .build()
+            ResponseEntity.created(URI.create("/course/${request.id}")).build<String>()
         }
-    }
+
 }
 
 data class CreateCourseRequest(

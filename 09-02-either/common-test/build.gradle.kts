@@ -10,11 +10,13 @@ group = "com.codely.common-test"
 
 repositories {
     mavenCentral()
+    maven(url = "https://oss.sonatype.org/content/repositories/snapshots")
 }
 
 dependencies {
     // internal dependencies
     implementation(project(":contexts:course"))
+    implementation("io.arrow-kt:arrow-core:2.0.0-SNAPSHOT")
 
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -28,6 +30,7 @@ tasks.withType<Test> {
 
 tasks.withType<KotlinCompile>() {
     kotlinOptions.jvmTarget = "11"
+    kotlinOptions.freeCompilerArgs += "-Xcontext-receivers"
 }
 spotless {
     kotlin {
