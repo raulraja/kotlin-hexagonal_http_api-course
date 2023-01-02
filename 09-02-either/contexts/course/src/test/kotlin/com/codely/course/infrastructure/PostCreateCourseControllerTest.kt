@@ -1,20 +1,19 @@
 package com.codely.course.infrastructure
 
-import arrow.core.Either
-import arrow.core.continuations.either
+import arrow.core.continuations.Raise
 import com.codely.course.application.CourseCreator
+import com.codely.course.domain.InvalidCourse
 import com.codely.course.domain.InvalidCourseId
-import com.codely.course.domain.InvalidCourseName
 import com.codely.course.infrastructure.rest.create.CreateCourseRequest
 import com.codely.course.infrastructure.rest.create.PostCreateCourseController
 import io.mockk.every
 import io.mockk.mockk
-import java.net.URI
-import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import java.net.URI
+import kotlin.test.assertEquals
 
 class PostCreateCourseControllerTest {
 
@@ -38,7 +37,9 @@ class PostCreateCourseControllerTest {
 
     @Test
     fun `should fail when id is not valid`() {
-        every { either { courseCreator.create(any(), any()) } } returns Either.Left(InvalidCourseId("1", null))
+        every { courseCreator::create.invoke(any(), any(), any()) } answers {
+            firstArg<Raise<InvalidCourse>>().raise(InvalidCourseId("1", null))
+        }
 
         val response = controller.execute(CreateCourseRequest("1", "Test"))
 
@@ -49,7 +50,9 @@ class PostCreateCourseControllerTest {
 
     @Test
     fun `should fail when name is not valid`() {
-        every { either { courseCreator.create(any(), any()) } } returns Either.Left(InvalidCourseName("Invalid", null))
+        every { courseCreator::create.invoke(any(), any(), any()) }  answers {
+            firstArg<Raise<InvalidCourse>>().raise(InvalidCourseId("Invalid", null))
+        }
 
         val response = controller.execute(CreateCourseRequest("03ef970b-719d-49c5-8d80-7dc762fe4be6", "Invalid"))
 
@@ -60,7 +63,7 @@ class PostCreateCourseControllerTest {
 
     @Test
     fun `should fail when there is an uncontrolled exception`() {
-        every { either { courseCreator.create(any(), any()) } } throws Throwable()
+        every { courseCreator::create.invoke(any(), any(), any()) } throws Throwable()
 
         val response = controller.execute(CreateCourseRequest("03ef970b-719d-49c5-8d80-7dc762fe4be6", "Test"))
 
