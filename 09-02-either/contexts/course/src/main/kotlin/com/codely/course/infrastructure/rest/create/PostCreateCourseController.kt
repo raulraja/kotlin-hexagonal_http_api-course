@@ -3,11 +3,11 @@ package com.codely.course.infrastructure.rest.create
 import com.codely.course.application.CourseCreator
 import com.codely.course.domain.*
 import com.codely.course.infrastructure.rest.response.respond
-import java.net.URI
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import java.net.URI
 
 @RestController
 class PostCreateCourseController(private val courseCreator: CourseCreator) {

@@ -29,8 +29,7 @@ class PostCreateCourseControllerTest {
 
     @Test
     fun `should return a successfull response`() {
-        every { either { courseCreator.create(any(), any()) } } returns either { }
-
+        every  { courseCreator::create.invoke(any(), any(), any()) } returns Unit
         val courseId = "03ef970b-719d-49c5-8d80-7dc762fe4be6"
         val response = controller.execute(CreateCourseRequest(courseId, "Test"))
 

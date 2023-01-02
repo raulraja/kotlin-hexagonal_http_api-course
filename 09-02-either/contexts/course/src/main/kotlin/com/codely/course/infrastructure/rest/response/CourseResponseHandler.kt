@@ -1,7 +1,7 @@
 package com.codely.course.infrastructure.rest.response
 
+import arrow.core.continuations.EagerEffect
 import arrow.core.continuations.Raise
-import arrow.core.continuations.eagerEffect
 import arrow.core.continuations.fold
 import arrow.core.identity
 import com.codely.course.domain.*
@@ -10,11 +10,16 @@ import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.ResponseEntity
 
+public inline fun <R, A> EagerEffect<R, A>.getOrElse(
+    error: (error: Throwable) -> A = { throw it },
+    recover: (raised: R) -> A,
+): A = fold({ invoke(this) }, error, recover, ::identity)
+
 /**
  * Responds to all endpoints handling throwables and raised values
  */
 internal fun <T> respond(f: Raise<CourseApplicationError>.() -> ResponseEntity<T>): ResponseEntity<T> =
-    eagerEffect { f() }.fold(::handleThrowable, ::handleCourseError, ::identity)
+    f.getOrElse(::handleThrowable, ::handleCourseError)
 
 /**
  * handle typed domain errors
